@@ -6,8 +6,10 @@
 //using namespace System::Threading;
 //using namespace System::Diagnostics;
 //
+//Controller::Controller(SM_ThreadManagement^ SM_TM, SM_Controller^ SM_Controller)
 //Controller::Controller(SM_ThreadManagement^ SM_TM, SM_VehicleControl^ SM_Controller)
 //{
+//	SM_Controller_ = SM_Controller;
 //	SM_VehicleControl_ = SM_Controller;
 //	SM_TM_ = SM_TM;
 //	Watch = gcnew Stopwatch;

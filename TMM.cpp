@@ -5,14 +5,19 @@
 #include "GNSS.h"
 #include "SMObjects.h"
 #include "VC.h"
+#include "Controller.h"
+#include "Display.h"
 
 
 // Create shared memory objects
 error_state ThreadManagement::setupSharedMemory()
 {
-	SM_TM_ = gcnew SM_ThreadManagement;
-	SM_Laser_ = gcnew SM_Laser;
-	SM_GNSS_ = gcnew SM_GNSS;
+	 SM_TM_ = gcnew SM_ThreadManagement;
+	 SM_Laser_ = gcnew SM_Laser;
+	 SM_GNSS_ = gcnew SM_GNSS;
+	 SM_VehicleControl_ = gcnew SM_VehicleControl;
+	 SM_Controller_ = gcnew SM_Controller;
+	 SM_Display_ = gcnew SM_Display;
 
 	return SUCCESS;
 }
@@ -22,9 +27,10 @@ void ThreadManagement::threadFunction()
 	Console::WriteLine("TMM		Thread is starting. ");
 	//make a list of thread properties
 	ThreadPropertiesList = gcnew array<ThreadProperties^>
-	{	gcnew ThreadProperties(gcnew ThreadStart(gcnew VC(SM_TM_, SM_VehicleControl_), &VC::threadFunction), true, bit_VC, "Vehicle Control Thread"),
+	{	gcnew ThreadProperties(gcnew ThreadStart(gcnew Display(SM_TM_, SM_Display_), &Display::threadFunction), false, bit_DISPLAY, "Dispplay Thread"),
+		gcnew ThreadProperties(gcnew ThreadStart(gcnew VC(SM_TM_, SM_VehicleControl_), &VC::threadFunction), true, bit_VC, "Vehicle Control Thread"),
 		gcnew ThreadProperties(gcnew ThreadStart(gcnew Laser(SM_TM_, SM_Laser_), &Laser::threadFunction), true, bit_LASER, "Laser Thread"),
-		gcnew ThreadProperties(gcnew ThreadStart(gcnew GNSS(SM_TM_, SM_GNSS_), &GNSS::threadFunction), true, bit_GPS, "GNSS Thread")};
+		gcnew ThreadProperties(gcnew ThreadStart(gcnew GNSS(SM_TM_, SM_GNSS_), &GNSS::threadFunction), false, bit_GNSS, "GNSS Thread")};
 	//make a list of threads
 	ThreadList = gcnew array<Thread^>(ThreadPropertiesList->Length);
 	//allocate space for the stop watch list
@@ -56,7 +62,7 @@ void ThreadManagement::threadFunction()
 
 	//end of thread loop
 	//shutdown all threads
-	shutdownThreads();
+	shutdownModules();
 
 	//join all threads (used so that tmm waits for the gnss and laser threads to terminate properly first)
 	for (int i = 0; i < ThreadPropertiesList->Length; i++)
@@ -87,7 +93,7 @@ error_state ThreadManagement::processHeartbeats()
 				{
 					//shutdown all threads
 					Console::WriteLine(ThreadPropertiesList[i]->ThreadName + " failure. Shutting down all threads.");
-					shutdownThreads();
+					shutdownModules();
 					return ERR_CRITICAL_PROCESS_FAILURE;
 				}
 				else
@@ -110,21 +116,21 @@ error_state ThreadManagement::processHeartbeats()
 	return SUCCESS;
 }
 
-void ThreadManagement::shutdownThreads()
-{
-	SM_TM_->shutdown = 0xFF;  //Ob11111111
-}
+//void ThreadManagement::shutdownThreads()
+//{
+//	SM_TM_->shutdown = 0xFF;  //Ob11111111
+//}
 
 // Get Shutdown signal for module, from Thread Management SM
 bool ThreadManagement::getShutdownFlag()
 {
-	return (SM_TM_->shutdown & bit_PM);
+	return (SM_TM_->shutdown & bit_TM);
 	return true;
 }
 
 void ThreadManagement::shutdownModules()
 {
-
+	SM_TM_->shutdown = 0xFF; //Ob11111111
 }
 
 error_state ThreadManagement::processSharedMemory()

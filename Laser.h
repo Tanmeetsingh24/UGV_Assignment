@@ -10,7 +10,7 @@ using namespace System::Diagnostics;
 ref class Laser : public NetworkedModule
 {
 public:
-
+    
     Laser(SM_ThreadManagement^ SM_TM, SM_Laser^ SM_Laser);
 
     error_state setupSharedMemory();  

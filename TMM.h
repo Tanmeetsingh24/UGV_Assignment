@@ -33,7 +33,7 @@ public:
     error_state setupSharedMemory();
     void threadFunction() override;               // Send/Recieve data from shared memory structures
     error_state processHeartbeats();             //error_state processSharedMemory();
-    void shutdownThreads();
+    //void shutdownThreads();
     bool getShutdownFlag() override;
     error_state processSharedMemory() override;   
     void shutdownModules() override;             //Defining this to shutdown the modules
@@ -46,7 +46,10 @@ private:
     SM_Laser^ SM_Laser_;
     SM_GNSS^ SM_GNSS_;
     SM_VehicleControl^ SM_VehicleControl_;
-    SM_Controller_^ SM_Controller_;
+
+    SM_Display^ SM_Display_;
+    SM_Controller^ SM_Controller_;
+
     array<Stopwatch^>^ StopwatchList;
     array<Thread^>^ ThreadList;
     array<ThreadProperties^>^ ThreadPropertiesList;

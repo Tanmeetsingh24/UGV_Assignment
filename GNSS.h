@@ -12,6 +12,7 @@ ref class GNSS : public NetworkedModule
 public:
     
     GNSS(SM_ThreadManagement^ SM_TM, SM_GNSS^ SM_GNSS);
+
     error_state setupSharedMemory();
     void threadFunction() override;
     error_state processHeartbeats();

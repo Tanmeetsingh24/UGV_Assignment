@@ -48,9 +48,9 @@ void GNSS::threadFunction()
 
 error_state GNSS::processHeartbeats()
 {
-	if ((SM_TM_->heartbeat & bit_GPS) == 0)
+	if ((SM_TM_->heartbeat & bit_GNSS) == 0)
 	{
-		SM_TM_->heartbeat |= bit_GPS;
+		SM_TM_->heartbeat |= bit_GNSS;
 		Watch->Restart();
 	}
 	else
@@ -71,7 +71,7 @@ void GNSS::shutdownModules()
 
 bool GNSS::getShutdownFlag()
 {
-	return SM_TM_->shutdown & bit_GPS;
+	return SM_TM_->shutdown & bit_GNSS;
 }
 
 error_state GNSS::communicate()
