@@ -13,6 +13,22 @@ GNSS::GNSS(SM_ThreadManagement^ SM_TM, SM_GNSS^ SM_GNSS)
 	Watch = gcnew Stopwatch;
 }
 
+GNSS::GNSS(String^ ipAddress, int port)
+{
+	IPAddress = ipAddress;
+	Port = port;
+	UGV = gcnew TcpClient(IPAddress, Port);
+	UGVStream = UGV->GetStream();
+	UGV->NoDelay = true;
+	UGV->ReceiveTimeout = 500;
+	UGV->SendTimeout = 500;
+	UGV->ReceiveBufferSize = 1024;
+	UGV->SendBufferSize = 1024;
+
+	SendData = gcnew array<unsigned char>(64);
+	RecvData = gcnew array<unsigned char>(64);
+}
+
 error_state GNSS::setupSharedMemory()
 {
 	return SUCCESS;
@@ -88,3 +104,8 @@ error_state GNSS::processSharedMemory()
 {
 	return SUCCESS;
 }
+
+//GNSS::~GNSS()
+//{
+//	UGV->Close();
+//}

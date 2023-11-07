@@ -14,6 +14,22 @@ Laser::Laser(SM_ThreadManagement^ SM_TM, SM_Laser^ SM_Laser)
 	Watch = gcnew Stopwatch;
 }
 
+Laser::Laser(String^ ipAddress, int port)
+{
+	IPAddress = ipAddress;
+	Port = port;
+	UGV = gcnew TcpClient(IPAddress, Port);
+	UGVStream = UGV->GetStream();
+	UGV->NoDelay = true;
+	UGV->ReceiveTimeout = 500;
+	UGV->SendTimeout = 500;
+	UGV->ReceiveBufferSize = 1024;
+	UGV->SendBufferSize = 1024;
+
+	SendData = gcnew array<unsigned char>(64);
+	RecvData = gcnew array<unsigned char>(64);
+}
+
 error_state Laser::setupSharedMemory()
 {
 	return SUCCESS;
@@ -91,3 +107,8 @@ error_state Laser::processSharedMemory()
 {
 	return SUCCESS;
 }
+
+//Laser::~Laser()
+//{
+//	UGV->Close();
+//}

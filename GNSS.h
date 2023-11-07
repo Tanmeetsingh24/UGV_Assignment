@@ -6,12 +6,16 @@
 using namespace System;
 using namespace System::Threading;
 using namespace System::Diagnostics;
+using namespace System::Net::Sockets;
+using namespace System::Text;
 
 ref class GNSS : public NetworkedModule
 {
 public:
     
     GNSS(SM_ThreadManagement^ SM_TM, SM_GNSS^ SM_GNSS);
+
+    GNSS(String^ ipAddress, int port); //tcp
 
     error_state setupSharedMemory();
     void threadFunction() override;
@@ -30,4 +34,13 @@ private:
     SM_ThreadManagement^ SM_TM_;
     SM_GNSS^ SM_GNSS_;
     Stopwatch^ Watch;
+
+    //tcp
+    TcpClient^ UGV;
+    array<uint8_t>^ SendData;
+    array<uint8_t>^ RecvData;
+    String^ IPAddress;
+    int Port;
+    NetworkStream^ UGVStream;
+
 };
