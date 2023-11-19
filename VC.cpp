@@ -13,14 +13,18 @@ VC::VC(SM_ThreadManagement^ SM_TM, SM_VehicleControl^ SM_VC)
 	Watch = gcnew Stopwatch;
 }
 
-error_state VC::setupSharedMemory()
-{
-	return SUCCESS;
-}
-
-
 error_state VC::connect(String^ hostName, int portNumber)
 {
+	Client = gcnew TcpClient(hostName, portNumber);
+	Stream = Client->GetStream();
+	Client->NoDelay = true;
+	Client->ReceiveTimeout = 500;
+	Client->SendTimeout = 500;
+	Client->ReceiveBufferSize = 1024;
+	Client->SendBufferSize = 1024;
+
+	SendData = gcnew array<unsigned char>(64);
+	ReadData = gcnew array<unsigned char>(64);
 	return SUCCESS;
 }
 

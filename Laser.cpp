@@ -14,30 +14,19 @@ Laser::Laser(SM_ThreadManagement^ SM_TM, SM_Laser^ SM_Laser)
 	Watch = gcnew Stopwatch;
 }
 
-Laser::Laser(String^ ipAddress, int port)
-{
-	IPAddress = ipAddress;
-	Port = port;
-	UGV = gcnew TcpClient(IPAddress, Port);
-	UGVStream = UGV->GetStream();
-	UGV->NoDelay = true;
-	UGV->ReceiveTimeout = 500;
-	UGV->SendTimeout = 500;
-	UGV->ReceiveBufferSize = 1024;
-	UGV->SendBufferSize = 1024;
-
-	SendData = gcnew array<unsigned char>(64);
-	RecvData = gcnew array<unsigned char>(64);
-}
-
-error_state Laser::setupSharedMemory()
-{
-	return SUCCESS;
-}
-
 
 error_state Laser::connect(String^ hostName, int portNumber)
 {
+	Client = gcnew TcpClient(hostName, portNumber);
+	Stream = Client->GetStream();
+	Client->NoDelay = true;
+	Client->ReceiveTimeout = 500;
+	Client->SendTimeout = 500;
+	Client->ReceiveBufferSize = 1024;
+	Client->SendBufferSize = 1024;
+
+	SendData = gcnew array<unsigned char>(64);
+	ReadData = gcnew array<unsigned char>(2048);
 	return SUCCESS;
 }
 
@@ -95,7 +84,22 @@ bool Laser::getShutdownFlag()
 
 error_state Laser::communicate()
 {
+	// sRN LMDscandata
+	// send STX byte 0x02
+	// send sRN LMDscandata
+	// send ETX byte 0x03
+		
+	//String^ Command = "sRN LMDscandata";
+	//
+	//SendData = Encoding::ASCII->GetBytes(Command);
+	//Stream->WriteByte(0x02); //sending STX
+	//Stream->Write(SendData, 0, SendData->Length);
+	//Stream->WriteByte(0x03); //sending ETX
+	//// wait for some time or use DataAvailable
+	//Thread::Sleep(10);
+	//Stream->Read(ReadData, 0, ReadData->Length);
 	return SUCCESS;
+		
 }
 
 error_state Laser::checkData()
@@ -104,7 +108,41 @@ error_state Laser::checkData()
 }
 
 error_state Laser::processSharedMemory()
-{
+{	
+	//int NumPoints;
+	//array<String^>^ Fragments;
+	//String^ Response = Encoding::ASCII->GetString(ReadData);
+	////Console::WriteLine(Response);
+	////check if total number of fields have been received
+	//Fragments = Response->Split(' ');
+	//
+	////Console::WriteLine(Fragments->Length);
+
+	////read data from LRF
+	//NumPoints = Convert::ToInt32(Fragments[25], 16);
+
+	////Lock SM
+	//Monitor::Enter(SM_Laser_->lockObject);
+
+	////Write to SM
+	//for (int i = 0; i < NumPoints; i++)
+	//{
+	//	SM_Laser_->x[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Cos(i * 0.05 * Math::PI / 180.0);
+	//	SM_Laser_->y[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Sin(i * 0.05 * Math::PI / 180.0);
+	//}
+
+	////unlock SM
+	//Monitor::Exit(SM_Laser_->lockObject);
+	//if (Fragments->Length == 400)
+	//	return SUCCESS;
+	//else
+	//	return ERR_INVALID_DATA;
+
+	//Disect the data string, extract range data and store in shared memory
+	
+	 
+	
+
 	return SUCCESS;
 }
 

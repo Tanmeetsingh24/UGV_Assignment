@@ -15,9 +15,7 @@ public:
     
     GNSS(SM_ThreadManagement^ SM_TM, SM_GNSS^ SM_GNSS);
 
-    GNSS(String^ ipAddress, int port); //tcp
 
-    error_state setupSharedMemory();
     void threadFunction() override;
     error_state processHeartbeats();
     void shutdownModules() override;
@@ -31,16 +29,9 @@ public:
     ~GNSS() {};
 
 private:
-    SM_ThreadManagement^ SM_TM_;
+    
     SM_GNSS^ SM_GNSS_;
     Stopwatch^ Watch;
-
-    //tcp
-    TcpClient^ UGV;
-    array<uint8_t>^ SendData;
-    array<uint8_t>^ RecvData;
-    String^ IPAddress;
-    int Port;
-    NetworkStream^ UGVStream;
+    array<unsigned char>^ SendData;
 
 };

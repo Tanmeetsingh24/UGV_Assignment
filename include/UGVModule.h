@@ -91,5 +91,4 @@ ref class UGVModule abstract
 
 	protected:
 		SM_ThreadManagement^ SM_TM_;
-		SM_Controller^ SM_Controller_;
 };

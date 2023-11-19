@@ -13,7 +13,6 @@ public:
    
     VC (SM_ThreadManagement^ SM_TM, SM_VehicleControl^ SM_VC_);
 
-    error_state setupSharedMemory();
     void threadFunction() override;
     error_state processHeartbeats();
     void shutdownModules() override;
@@ -30,5 +29,6 @@ private:
     SM_ThreadManagement^ SM_TM_;
     SM_VehicleControl^ SM_VehicleControl_;
     Stopwatch^ Watch;
+    array<unsigned char>^ SendData;
 };
 
