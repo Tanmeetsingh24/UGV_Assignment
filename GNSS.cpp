@@ -99,11 +99,11 @@ error_state GNSS::communicate()
 {
 	unsigned int Header = 0;
 	Byte GData;
-	while (Header != 0x44121c) 
-	{
+	 
+	do{
 		GData = Stream->ReadByte();
 		Header = (Header << 8) | GData;
-	}
+	} while (Header != 0xaa44121c);
 
 	for (int i = 0; i < 108; i++)
 	{
