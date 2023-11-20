@@ -106,15 +106,15 @@ public:
     }
 };
 
-//ref class SM_Controller
-//{
-//public:
-//    Object^ lockObject;
-//
-//
-//    SM_Controller() {
-//        lockObject = gcnew Object();
-//    }
-//};
+ref class SM_Controller
+{
+public:
+    Object^ lockObject;
+
+
+    SM_Controller() {
+        lockObject = gcnew Object();
+    }
+};
 
 

@@ -40,11 +40,11 @@ error_state GNSS::connect(String^ hostName, int portNumber)
 	return SUCCESS;
 }
 
-//GNSS::~GNSS()
-//{
-//	Stream->Close();
-//	Client->Close();
-//}
+GNSS::~GNSS()
+{
+	Stream->Close();
+	Client->Close();
+}
 
 void GNSS::threadFunction()
 {
@@ -117,6 +117,8 @@ error_state GNSS::communicate()
 	Height = BitConverter::ToDouble(ReadData, 56);
 
 	CRC = BitConverter::ToUInt32(ReadData, 104);
+
+	//CalculatedCRC = 
 
 	Console::WriteLine("Northing:{0:F3} Easting:{1:F3} Height:{2:F3} CRC:{3:X8} ", Northing, Easting, Height, CRC);
 	return SUCCESS;
