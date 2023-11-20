@@ -17,6 +17,8 @@ Display::Display(SM_ThreadManagement^ SM_TM, SM_Laser^ SM_Laser, SM_GNSS^ SM_GNS
 
 void Display::threadFunction()
 {
+	connect(DISPLAY_ADDRESS, 28000);
+
 	Console::WriteLine("Display		Thread is starting.");
 	//setup the stopwatch
 	Watch = gcnew Stopwatch;
@@ -49,7 +51,7 @@ error_state Display::processHeartbeats()
 		if (Watch->ElapsedMilliseconds > CRASH_LIMIT)
 		{
 			shutdownModules();
-			return ERR_TMM_FAILURE;
+			return ERR_DISPLAY_FAILURE;
 		}
 	}
 	//Heartbeat byte down?
@@ -69,13 +71,23 @@ bool Display::getShutdownFlag()
 
 error_state Display::connect(String^ hostName, int portNumber)
 {
-	Client = gcnew TcpClient(hostName, portNumber);
-	Stream = Client->GetStream();
+	try
+	{
+		Client = gcnew TcpClient(hostName, portNumber);
+	}
+	catch (int error)
+	{
+		Console::WriteLine("Error: Failed to establish connection with Laser err_code=%d", error);
+		shutdownModules();
+		return ERR_CONNECTION;
+	}
+	
 	Client->NoDelay = true;
 	Client->ReceiveTimeout = 500;
 	Client->SendTimeout = 500;
 	Client->ReceiveBufferSize = 1024;
 	Client->SendBufferSize = 1024;
+	Stream = Client->GetStream();
 
 	SendData = gcnew array<unsigned char>(64);
 	ReadData = gcnew array<unsigned char>(64);
@@ -87,24 +99,24 @@ error_state Display::communicate()
 	return SUCCESS;
 }
 
-
 void Display::sendDisplayData()
 {
 	// Serialize the data arrays to a byte array
 	//(format required for sending)
-	//Monitor::Enter(SM_Laser_->lockObject);
 
-	//array<Byte>^ dataX = gcnew array<Byte>(SM_Laser_->x->Length * sizeof(double));
-	//Buffer::BlockCopy(SM_Laser_->x, 0, dataX, 0, dataX->Length);
-	//array<Byte>^ dataY = gcnew array<Byte>(SM_Laser_->y->Length * sizeof(double));
-	//Buffer::BlockCopy(SM_Laser_->y, 0, dataY, 0, dataY->Length);
+	Monitor::Enter(SM_Laser_->lockObject); //Mutex Start
 
-	//Monitor::Exit(SM_Laser_->lockObject);
+	array<Byte>^ dataX = gcnew array<Byte>(SM_Laser_->x->Length * sizeof(double));
+	Buffer::BlockCopy(SM_Laser_->x, 0, dataX, 0, dataX->Length);
+	array<Byte>^ dataY = gcnew array<Byte>(SM_Laser_->y->Length * sizeof(double));
+	Buffer::BlockCopy(SM_Laser_->y, 0, dataY, 0, dataY->Length);
 
-	//// Send byte data over connection
-	//Stream->Write(dataX, 0, dataX->Length);
-	//Thread::Sleep(10);
-	//Stream->Write(dataY, 0, dataY->Length);
+	Monitor::Exit(SM_Laser_->lockObject);			//Mutex End
+
+	// Send byte data over connection
+	Stream->Write(dataX, 0, dataX->Length);
+	Thread::Sleep(10);
+	Stream->Write(dataY, 0, dataY->Length);
 }
 
 error_state Display::processSharedMemory()
@@ -120,7 +132,7 @@ error_state Display::checkData()
 
 //void Display::FakeLaser() // SM_Laser_ should give us the access to real laer data. This is just to test the data being displayed on the Matlab module
 //{
-//	//SM_Laser_ = gcnew SM_Laser();
+//	SM_Laser_ = gcnew SM_Laser();
 //
 //	for (int i = 0; i < 361; i++)
 //	{

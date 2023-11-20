@@ -29,13 +29,24 @@ struct GNSS_Data		//segregating bytes for processing GNSS data of 112 bytes
 
 error_state GNSS::connect(String^ hostName, int portNumber)
 {
-	Client = gcnew TcpClient(hostName, portNumber);
-	Stream = Client->GetStream();
+	try
+	{
+		Client = gcnew TcpClient(hostName, portNumber);
+	}
+	catch (int error)
+	{
+		Console::WriteLine("Error: Failed to establish connection with GNSS module err_code=%d", error);
+		shutdownModules();
+		return ERR_CONNECTION;
+	}
+
+	
 	Client->NoDelay = true;
 	Client->ReceiveTimeout = 500;
 	Client->SendTimeout = 500;
 	Client->ReceiveBufferSize = 1024;
 	Client->SendBufferSize = 1024;
+	Stream = Client->GetStream();
 
 	SendData = gcnew array<unsigned char>(64);
 	ReadData = gcnew array<unsigned char>(256);
@@ -52,12 +63,12 @@ void GNSS::threadFunction()
 {
 
 	Console::WriteLine("GNSS		Thread is starting.");
-	//setup the stopwatch
-	Watch = gcnew Stopwatch;
-	//barrier
-	SM_TM_->ThreadBarrier->SignalAndWait();
+	
+	Watch = gcnew Stopwatch;      //setup the stopwatch
+	
+	SM_TM_->ThreadBarrier->SignalAndWait();   //barrier
 	Watch->Start();
-	while (/*!Console::KeyAvailable && */ !getShutdownFlag())
+	while (!getShutdownFlag())
 	{
 		Console::WriteLine("GNSS		Thread is running.");
 		processHeartbeats();
@@ -69,6 +80,24 @@ void GNSS::threadFunction()
 	}
 	Console::WriteLine("GNSS		thread is terminating");
 
+}
+
+error_state GNSS::processHeartbeats()
+{
+	if ((SM_TM_->heartbeat & bit_GNSS) == 0)
+	{
+		SM_TM_->heartbeat |= bit_GNSS;
+		Watch->Restart();
+	}
+	else
+	{
+		if (Watch->ElapsedMilliseconds > CRASH_LIMIT)
+		{
+			//shutdownModules();
+			return ERR_GNSS_FAILURE;
+		}
+	}
+	return SUCCESS;
 }
 
 
@@ -121,26 +150,11 @@ error_state GNSS::processSharedMemory()
 //		Console::WriteLine("GPS checksum mismatched");
 //	}
 //	Thread::Sleep(100);
+
 	return SUCCESS;
 }
 
-error_state GNSS::processHeartbeats()
-{
-	if ((SM_TM_->heartbeat & bit_GNSS) == 0)
-	{
-		SM_TM_->heartbeat |= bit_GNSS;
-		Watch->Restart();
-	}
-	else
-	{
-		if (Watch->ElapsedMilliseconds > CRASH_LIMIT)
-		{
-			shutdownModules();
-			return ERR_TMM_FAILURE;
-		}
-	}
-	return SUCCESS;
-}
+
 
 error_state GNSS::communicate()
 {

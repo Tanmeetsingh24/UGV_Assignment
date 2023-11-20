@@ -1,6 +1,5 @@
 #using<System.dll>
 #include "VC.h"
-#include "UGVModule.h"
 
 using namespace System;
 using namespace System::Threading;
@@ -62,7 +61,7 @@ error_state VC::processHeartbeats()
 		if (Watch->ElapsedMilliseconds > CRASH_LIMIT)
 		{
 			shutdownModules();
-			return ERR_TMM_FAILURE;
+			return ERR_VC_FAILURE;
 		}
 	}
 	//Heartbeat byte down?

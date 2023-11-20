@@ -1,4 +1,5 @@
 //#using<System.dll>
+//#include "ControllerInterface.h"
 //#include "Controller.h"
 //#include "UGVModule.h"
 //
@@ -7,18 +8,12 @@
 //using namespace System::Diagnostics;
 //
 //Controller::Controller(SM_ThreadManagement^ SM_TM, SM_Controller^ SM_Controller)
-//Controller::Controller(SM_ThreadManagement^ SM_TM, SM_VehicleControl^ SM_Controller)
 //{
-//	SM_Controller_ = SM_Controller;
-//	SM_VehicleControl_ = SM_Controller;
 //	SM_TM_ = SM_TM;
 //	Watch = gcnew Stopwatch;
 //}
 //
-//error_state Controller::setupSharedMemory()
-//{
-//	return SUCCESS;
-//}
+//
 //
 //
 //error_state Controller::connect(String^ hostName, int portNumber)
@@ -78,17 +73,39 @@
 //	return SM_TM_->shutdown & bit_CONTROLLER;
 //}
 //
-//error_state Controller::communicate()
-//{
-//	return SUCCESS;
+//ControllerInterface() {
+//
 //}
 //
-//error_state Controller::checkData()
-//{
-//	return SUCCESS;
-//}
+///**
+//* Constructs a class setting the controller number and input type as specified
+//* Definition of controller type for use when running softare to be controllable
+//* by keyboard and xbox controller independently.
+//* Use keyboard for testing at home if you do not have a controller
+//* @param playerNum number of the controller being communicated with
+//* (specified by the controller) as an integer in the range 1-4
+//* @param input 0 for X-Box controller and 1 for keyboard
+//*/
+//ControllerInterface(DWORD playerNum, int input_type);
 //
-//error_state Controller::processSharedMemory()
-//{
-//	return SUCCESS;
-//}
+///**
+//* Gets the state of all inputs from the controller
+//* @returns struct as the state of all controller inputs.
+//* Return type is as defined in the struct above.
+//*/
+//controllerState GetState();
+//
+///**
+//* Check whether there is a controller connected currently based on the class instantiation.
+//* If keyboard mode is used, this will always return true
+//* @returns true if controller is currently connected
+//*/
+//bool IsConnected();
+//
+///**
+//* Helpful function for printing out the state of the whole controller (based on what you
+//* would have got from the GetState function).
+//* @param state current state of the controller (as returned by ControllerInterface::GetState()
+//*/
+//static void printControllerState(controllerState state);
+//

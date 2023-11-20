@@ -23,7 +23,8 @@ public:
     error_state checkData();
     error_state processSharedMemory() override;
     error_state connect(String^ hostName, int portNumber) override;
-    
+    error_state Laser::authenticate();
+    //error_state Laser::readValues();
     
     ~Laser() {};
 
@@ -32,5 +33,12 @@ private:
     SM_Laser^ SM_Laser_;
     Stopwatch^ Watch;
     array<unsigned char>^ SendData;
-       
+    String^ ResponseData;
+
+    
+    bool bytesRequired;
+    int StartByte = 0x02;
+    int EndByte = 0x03;
+    String^ Command; 
+
 };

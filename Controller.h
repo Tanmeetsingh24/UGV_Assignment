@@ -2,11 +2,12 @@
 //#using <System.dll>
 //#include "SMObjects.h"
 //#include "NetworkedModule.h"
-//#include "ControllerInterface.h"
 //
 //using namespace System;
 //using namespace System::Threading;
 //using namespace System::Diagnostics;
+//using namespace System::Net::Sockets;
+//using namespace System::Text;
 //
 //ref class Controller : public UGVModule
 //{
@@ -14,22 +15,21 @@
 //
 //    Controller(SM_ThreadManagement^ SM_TM, SM_Controller^ SM_Controller);
 //
-//    error_state setupSharedMemory();
+//
+//    error_state processSharedMemory() override;
+//    bool getShutdownFlag() override;
+//    void shutdownModules() override;
 //    void threadFunction() override;
 //    error_state processHeartbeats();
-//    void shutdownModules() override;
-//    bool getShutdownFlag() override;
-//    error_state communicate() override;
-//    error_state checkData();
-//    error_state processSharedMemory() override;
-//    error_state connect(String^ hostName, int portNumber) override;
-//
+//   
 //
 //    ~Controller() {};
 //
 //private:
-//    SM_ThreadManagement^ SM_TM_;
-//    SM_VehicleControl^ SM_VehicleControl_;
+//
+//    SM_GNSS^ SM_GNSS_;
 //    Stopwatch^ Watch;
+//    array<unsigned char>^ SendData;
+//
 //};
 //

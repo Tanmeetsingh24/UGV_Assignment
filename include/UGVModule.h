@@ -23,9 +23,20 @@ enum error_state {
 	ERR_SM,
 	ERR_CONNECTION,
 	ERR_TMM_FAILURE,
+	
 	// Define your own additional error types as needed
 	ERR_CRITICAL_PROCESS_FAILURE,         //added this for critical failures 
-	ERR_NONCRITICAL_PROCESS_FAILURE		  //added this for non critical failures
+	ERR_NONCRITICAL_PROCESS_FAILURE,		  //added this for non critical failures
+	ERR_LASER_FAILURE,
+	ERR_GNSS_FAILURE,
+	ERR_VC_FAILURE,
+	ERR_DISPLAY_FAILURE,
+	ERR_CLIENT_CONNECTION_FAILED,
+	ERR_SERVER_CONNECTION_FAAILED,
+	ERR_NO_CLIENT_DATA,
+	ERR_NO_SERVER_DATA,
+	ERR_WRITE,
+	ERR_READ
 };
 
 ref class UGVModule abstract

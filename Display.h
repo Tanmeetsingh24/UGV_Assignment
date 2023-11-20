@@ -23,7 +23,7 @@ public:
     error_state checkData();
     //void FakeLaser();   //Comment Out after Testing the Matlab Display
 
-    void sendDisplayData();
+    void Display::sendDisplayData();
 
     ~Display() {};
 

@@ -5,8 +5,8 @@
 #include "GNSS.h"
 #include "SMObjects.h"
 #include "VC.h"
-#include "Controller.h"
 #include "Display.h"
+#include "Controller.h"
 
 
 // Create shared memory objects
@@ -16,6 +16,8 @@ error_state ThreadManagement::setupSharedMemory()
 	 SM_Laser_ = gcnew SM_Laser;
 	 SM_GNSS_ = gcnew SM_GNSS;
 	 SM_VehicleControl_ = gcnew SM_VehicleControl;
+
+	 //SM_Controller_ = gcnew SM_Controller;
 	  
 	return SUCCESS;
 }
@@ -25,9 +27,10 @@ void ThreadManagement::threadFunction()
 	Console::WriteLine("TMM		Thread is starting. ");
 	//make a list of thread properties
 	ThreadPropertiesList = gcnew array<ThreadProperties^>
-	{	gcnew ThreadProperties(gcnew ThreadStart(gcnew Laser(SM_TM_, SM_Laser_), &Laser::threadFunction), true, bit_LASER, "Laser Thread"),
+	{	//gcnew ThreadProperties(gcnew ThreadStart(gcnew Controller(SM_TM_, SM_Controller), &Controller::threadFunction), true, bit_CONTROLLER, "Controller Thread"),
+		gcnew ThreadProperties(gcnew ThreadStart(gcnew Laser(SM_TM_, SM_Laser_), &Laser::threadFunction), true, bit_LASER, "Laser Thread"),
 		gcnew ThreadProperties(gcnew ThreadStart(gcnew VC(SM_TM_, SM_VehicleControl_), &VC::threadFunction), true, bit_VC, "Vehicle Control Thread"),
-		gcnew ThreadProperties(gcnew ThreadStart(gcnew Display(SM_TM_, SM_Laser_,SM_GNSS_), &Display::threadFunction), false, bit_DISPLAY, "Display Thread"),
+		gcnew ThreadProperties(gcnew ThreadStart(gcnew Display(SM_TM_, SM_Laser_,SM_GNSS_), &Display::threadFunction), true, bit_DISPLAY, "Display Thread"),
 		gcnew ThreadProperties(gcnew ThreadStart(gcnew GNSS(SM_TM_, SM_GNSS_), &GNSS::threadFunction), false, bit_GNSS, "GNSS Thread")};
 	//make a list of threads
 	ThreadList = gcnew array<Thread^>(ThreadPropertiesList->Length);
