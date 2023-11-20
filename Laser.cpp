@@ -45,10 +45,11 @@ error_state Laser::communicate()
 	try 
 	{
 		SendData = Encoding::ASCII->GetBytes(Command);
-		if (bytesRequired) Stream->WriteByte(0x02);
+		Stream->WriteByte(0x02);
 		Stream->Write(SendData, 0, SendData->Length);
-		if (bytesRequired)Stream->WriteByte(0x03);
-		Thread::Sleep(10);
+		Stream->WriteByte(0x03);
+		Thread::Sleep(20);
+		Stream->Read(ReadData, 0, ReadData->Length);
 	}
 	catch (int error)
 	{
@@ -97,123 +98,75 @@ error_state Laser::authenticate()
 }
 
 error_state Laser::processSharedMemory()
-{
-	/*array<String^>^ LaserData = ResponseData->Split(' ');
+{	
+	/*array<String^>^ Fragments;
+
+	String^ ResponseData = Encoding::ASCII->GetString(ReadData);
+	if (ResponseData->Length == 361) {
+		Fragments = ResponseData->Split(' ');
+
+	Console::WriteLine(ResponseData[20]);
 	
-	Console::WriteLine(LaserData[1]);
+	double StartAngle = Convert::ToInt32(Fragments[23], 16);
+	double AngularStep = Convert::ToInt32(Fragments[24], 16) / 10000.0;
+	double NumberData = Convert::ToInt32(Fragments[25], 16);
+	Console::WriteLine("The start angle: {0, 0:F0}", StartAngle);
+	Console::WriteLine("The step size: {0, 0:F3}", AngularStep);
+	Console::WriteLine("The number of data  points: {0, 0:F0}", NumberData);
 
-	if (LaserData[1] == "LMDscandata") {
-		Console::WriteLine(LaserData[20]);
-		double StartAngle = System::Convert::ToInt32(LaserData[23], 16);
-		double AngularStep = System::Convert::ToInt32(LaserData[24], 16) / 10000.0;
-		double NumberData = System::Convert::ToInt32(LaserData[25], 16);
-		Console::WriteLine("The start angle: {0, 0:F0}", StartAngle);
-		Console::WriteLine("The step size: {0, 0:F3}", AngularStep);
-		Console::WriteLine("The number of data  points: {0, 0:F0}", NumberData);
+	double temp, angle;
 
-		double temp, angle;
+	Monitor::Enter(SM_Laser_->lockObject);
 
-		Monitor::Enter(SM_Laser_->lockObject);
+	for (int i = 0; i < NumberData; i++) {
+		temp = Convert::ToInt32(Fragments[26 + i], 16);
+		SM_Laser_->x[i] = temp * sin(i * AngularStep * Math::PI / 180);
+		SM_Laser_->y[i] = temp * cos(i * AngularStep * Math::PI / 180);
 
-		for (int i = 0; i < NumberData; i++) {
-			temp = System::Convert::ToInt32(LaserData[26 + i], 16);
-			SM_Laser_->x[i] = temp * sin(i * AngularStep * Math::PI / 180);
-			SM_Laser_->y[i] = temp * cos(i * AngularStep * Math::PI / 180);
-
-		}
-
-		Monitor::Exit(SM_Laser_->lockObject);
 	}
 
-	for (int i = 0; i < STANDARD_LASER_LENGTH; i++) {
-			Console::WriteLine("x:{0, 0:F4} y:{1, 0:F4}", SM_Laser_->x[i], SM_Laser_->y[i]);
-	}*/
+	Monitor::Exit(SM_Laser_->lockObject);
+}
 
+for (int i = 0; i < STANDARD_LASER_LENGTH; i++) {
+	Console::WriteLine("x:{0, 0:F4} y:{1, 0:F4}", SM_Laser_->x[i], SM_Laser_->y[i]);
+}*/
 
-	/*Command = "sRN LMDscandata";
-	bytesRequired = true;
-	communicate();
-
-	array<String^>^ Fragments = ResponseData->Split(' ');
-
-	double angle = Math::PI/2;
-	double increment = Math::PI / (STANDARD_LASER_LENGTH - 1);
-
-	int tmp = 0;
-	while (Fragments[tmp] != "LMDscandata" && tmp < Fragments->Length)
-	{
-		tmp++;
-	}
-	if (tmp >= Fragments->Length)
-	{
-		return SUCCESS;
-	}
-	for (int i = 0; i < STANDARD_LASER_LENGTH; i++)
-	{
-		Decimal num = Convert::ToInt32(Fragments[i + 26 + tmp], 16);
-		double hypotenuse = Decimal::ToDouble(num);
-
-		SM_Laser_->x[i] = hypotenuse * cos(angle);
-		SM_Laser_->y[i] = hypotenuse * sin(angle);
-	}*/
-
-	/*int NumPoints;
+	int NumPoints;
+	
 	array<String^>^ Fragments;
 	String^ ResponseData = Encoding::ASCII->GetString(ReadData);
 	//Console::WriteLine(Response);
 	//check if total number of fields have been received
-	Fragments = ResponseData->Split(' ');
-	
-	Console::WriteLine(Fragments->Length);
+	if (ResponseData->Length > 360) {
+		Fragments = ResponseData->Split(' ');
 
-	//read data from LRF
-	NumPoints = Convert::ToInt32(Fragments[25], 16);
+		Console::WriteLine(Fragments->Length);
 
-	//Lock SM
-	Monitor::Enter(SM_Laser_->lockObject);
+	//	//read data from LRF
 
-	//Write to SM
-	for (int i = 0; i < NumPoints; i++)
-	{
-		SM_Laser_->x[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Cos(i * 0.05 * Math::PI / 180.0);
-		SM_Laser_->y[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Sin(i * 0.05 * Math::PI / 180.0);
+
+		NumPoints = Convert::ToInt32(Fragments[25], 16);
+	//	//Lock SM
+		Monitor::Enter(SM_Laser_->lockObject);
+
+		//Write to SM/
+
+
+		for (int i = 0; i < NumPoints; i++)
+		{
+			SM_Laser_->x[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Cos(i * 0.05 * Math::PI / 180.0);
+			SM_Laser_->y[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Sin(i * 0.05 * Math::PI / 180.0);
+		}
 	}
-
-	//unlock SM
-	Monitor::Exit(SM_Laser_->lockObject);
-	if (Fragments->Length == 400)
-		return SUCCESS;
 	else
-		return ERR_INVALID_DATA;*/
+		return ERR_INVALID_DATA;
 
-	//Disect the data string, extract range data and store in shared memory
-
+	////unlock SM
+	Monitor::Exit(SM_Laser_->lockObject);
+		
 	return SUCCESS;
 }
-
-//error_state Laser::readValues()
-//{
-//	Command = "SRN LMDscandata";
-//	bytesRequired = true;
-//
-//	communicate();
-//
-//	int NumPoints;
-//	
-//	array<String^>^ Fragments;
-//	Fragments = Response->Split(' ');
-//
-//	double angle = 
-//
-//	
-//	//Console::WriteLine(Response);
-//	//check if total number of fields have been received
-//	
-//
-//	Console::WriteLine(Fragments->Length);
-//
-//}
-
 
 void Laser::threadFunction()
 {
@@ -235,6 +188,13 @@ void Laser::threadFunction()
 		if (communicate() == SUCCESS && checkData() == SUCCESS)
 		{
 			processSharedMemory();
+
+			String^ print = "";
+			for (int i = 0; i < SM_Laser_->x->Length; i++)
+			{
+				print = SM_Laser_->x[i] + "   " + SM_Laser_->y[i] + "\n";
+			}
+			Console::WriteLine(print);
 		}
 		Thread::Sleep(100);
 	}

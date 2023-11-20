@@ -83,8 +83,8 @@ error_state Display::connect(String^ hostName, int portNumber)
 	}
 	
 	Client->NoDelay = true;
-	Client->ReceiveTimeout = 500;
-	Client->SendTimeout = 500;
+	Client->ReceiveTimeout = 2500;
+	Client->SendTimeout = 2500;
 	Client->ReceiveBufferSize = 1024;
 	Client->SendBufferSize = 1024;
 	Stream = Client->GetStream();
