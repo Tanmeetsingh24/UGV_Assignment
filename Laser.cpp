@@ -98,56 +98,27 @@ error_state Laser::authenticate()
 }
 
 error_state Laser::processSharedMemory()
-{	
-	/*array<String^>^ Fragments;
-
-	String^ ResponseData = Encoding::ASCII->GetString(ReadData);
-	if (ResponseData->Length == 361) {
-		Fragments = ResponseData->Split(' ');
-
-	Console::WriteLine(ResponseData[20]);
-	
-	double StartAngle = Convert::ToInt32(Fragments[23], 16);
-	double AngularStep = Convert::ToInt32(Fragments[24], 16) / 10000.0;
-	double NumberData = Convert::ToInt32(Fragments[25], 16);
-	Console::WriteLine("The start angle: {0, 0:F0}", StartAngle);
-	Console::WriteLine("The step size: {0, 0:F3}", AngularStep);
-	Console::WriteLine("The number of data  points: {0, 0:F0}", NumberData);
-
-	double temp, angle;
-
-	Monitor::Enter(SM_Laser_->lockObject);
-
-	for (int i = 0; i < NumberData; i++) {
-		temp = Convert::ToInt32(Fragments[26 + i], 16);
-		SM_Laser_->x[i] = temp * sin(i * AngularStep * Math::PI / 180);
-		SM_Laser_->y[i] = temp * cos(i * AngularStep * Math::PI / 180);
-
-	}
-
-	Monitor::Exit(SM_Laser_->lockObject);
-}
-
-for (int i = 0; i < STANDARD_LASER_LENGTH; i++) {
-	Console::WriteLine("x:{0, 0:F4} y:{1, 0:F4}", SM_Laser_->x[i], SM_Laser_->y[i]);
-}*/
-
+{
 	int NumPoints;
 	
 	array<String^>^ Fragments;
 	String^ ResponseData = Encoding::ASCII->GetString(ReadData);
-	//Console::WriteLine(Response);
+
+	for (int i = 0; i < STANDARD_LASER_LENGTH; i++) {
+		Console::WriteLine("x:{0, 0:F4} y:{1, 0:F4}", SM_Laser_->x[i], SM_Laser_->y[i]);
+	}
 	//check if total number of fields have been received
+	
 	if (ResponseData->Length > 360) {
 		Fragments = ResponseData->Split(' ');
 
-		Console::WriteLine(Fragments->Length);
+		
 
-	//	//read data from LRF
+		//read data from LRF
 
 
 		NumPoints = Convert::ToInt32(Fragments[25], 16);
-	//	//Lock SM
+		//Lock SM
 		Monitor::Enter(SM_Laser_->lockObject);
 
 		//Write to SM/
@@ -155,16 +126,17 @@ for (int i = 0; i < STANDARD_LASER_LENGTH; i++) {
 
 		for (int i = 0; i < NumPoints; i++)
 		{
-			SM_Laser_->x[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Cos(i * 0.05 * Math::PI / 180.0);
-			SM_Laser_->y[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Sin(i * 0.05 * Math::PI / 180.0);
+			SM_Laser_->x[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Cos(i * 0.5 * Math::PI / 180.0);
+			SM_Laser_->y[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Sin(i * 0.5 * Math::PI / 180.0);
 		}
+		Console::WriteLine("{0:D5} {1:D5}", NumPoints, Fragments->Length);
 	}
 	else
 		return ERR_INVALID_DATA;
 
-	////unlock SM
+	//unlock SM
 	Monitor::Exit(SM_Laser_->lockObject);
-		
+			
 	return SUCCESS;
 }
 
