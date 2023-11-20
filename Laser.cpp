@@ -104,32 +104,27 @@ error_state Laser::processSharedMemory()
 	array<String^>^ Fragments;
 	String^ ResponseData = Encoding::ASCII->GetString(ReadData);
 
-	for (int i = 0; i < STANDARD_LASER_LENGTH; i++) {
+	/*for (int i = 0; i < STANDARD_LASER_LENGTH; i++) {
 		Console::WriteLine("x:{0, 0:F4} y:{1, 0:F4}", SM_Laser_->x[i], SM_Laser_->y[i]);
-	}
+	}*/
 	//check if total number of fields have been received
 	
 	if (ResponseData->Length > 360) {
 		Fragments = ResponseData->Split(' ');
-
-		
-
+			
 		//read data from LRF
-
 
 		NumPoints = Convert::ToInt32(Fragments[25], 16);
 		//Lock SM
 		Monitor::Enter(SM_Laser_->lockObject);
 
 		//Write to SM/
-
-
 		for (int i = 0; i < NumPoints; i++)
 		{
 			SM_Laser_->x[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Cos(i * 0.5 * Math::PI / 180.0);
 			SM_Laser_->y[i] = Convert::ToInt32(Fragments[26 + i], 16) * Math::Sin(i * 0.5 * Math::PI / 180.0);
 		}
-		Console::WriteLine("{0:D5} {1:D5}", NumPoints, Fragments->Length);
+		//Console::WriteLine("{0:D5} {1:D5}", NumPoints, Fragments->Length);
 	}
 	else
 		return ERR_INVALID_DATA;
@@ -160,13 +155,6 @@ void Laser::threadFunction()
 		if (communicate() == SUCCESS && checkData() == SUCCESS)
 		{
 			processSharedMemory();
-
-			String^ print = "";
-			for (int i = 0; i < SM_Laser_->x->Length; i++)
-			{
-				print = SM_Laser_->x[i] + "   " + SM_Laser_->y[i] + "\n";
-			}
-			Console::WriteLine(print);
 		}
 		Thread::Sleep(100);
 	}
