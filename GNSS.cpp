@@ -13,20 +13,6 @@ GNSS::GNSS(SM_ThreadManagement^ SM_TM, SM_GNSS^ SM_GNSS)
 	Watch = gcnew Stopwatch;
 }
 
-
-#pragma pack(push,4)
-struct GNSS_Data		//segregating bytes for processing GNSS data of 112 bytes
-{
-	unsigned int Header;
-	unsigned char Discards1[40];
-	double Northing;
-	double Easting;
-	double Height;
-	unsigned char Discards2[40];
-	unsigned int CRC;
-};
-#pragma pack(pop,4)
-
 error_state GNSS::connect(String^ hostName, int portNumber)
 {
 	try
@@ -39,17 +25,18 @@ error_state GNSS::connect(String^ hostName, int portNumber)
 		shutdownModules();
 		return ERR_CONNECTION;
 	}
-
-	
 	Client->NoDelay = true;
-	Client->ReceiveTimeout = 500;
-	Client->SendTimeout = 500;
+	Client->ReceiveTimeout = 2500;
+	Client->SendTimeout = 2500;
 	Client->ReceiveBufferSize = 1024;
 	Client->SendBufferSize = 1024;
 	Stream = Client->GetStream();
 
-	SendData = gcnew array<unsigned char>(64);
-	ReadData = gcnew array<unsigned char>(256);
+	SendData = gcnew array<unsigned char>(2048);
+	ReadData = gcnew array<unsigned char>(2048);
+
+	communicate();
+
 	return SUCCESS;
 }
 
@@ -61,6 +48,7 @@ error_state GNSS::connect(String^ hostName, int portNumber)
 
 void GNSS::threadFunction()
 {
+	connect(WEEDER_ADDRESS, 24000);
 
 	Console::WriteLine("GNSS		Thread is starting.");
 	
@@ -103,61 +91,34 @@ error_state GNSS::processHeartbeats()
 
 error_state GNSS::processSharedMemory()
 {
-//	// Start reading from header. From there we fill GPS_struct
-//	// Trapping the Header
-//	bool hasHeader = false;
-//	unsigned int Header = 0;
-//	int i = 0;
-//	int Start; //Start of data
-//	unsigned char Data;
-//	do
-//	{
-//		Data = ReadData[i++];
-//		Header = ((Header << 8) | Data);
-//		if (Header == 0xaa44121c) {
-//			hasHeader = true;
-//		}
-//	} while (Header != 0xaa44121c && i < ReadData->Length);
-//	Start = i - 4;
-//	if (hasHeader == false) {
-//		return;
-//	}
-//	// Filling data
-//	unsigned char* BytePtr = (unsigned char*)&GNSS_Data;
-//	for (int i = Start; i < Start + sizeof(GNSS_Data); i++)
-//	{
-//		*(BytePtr + i) = ReadData[i];
-//	}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//	Thread::Sleep(10);
-//	// Get incoming data
-//	if (Stream->DataAvailable) {
-//		Stream->Read(ReadData, 0, ReadData->Length);
-//	}
-//	this->readFromHeader();
-//	// Compare CRC before setting attributes
-//	unsigned char* bytePtr = (unsigned char*)&GPS_struct;
-//	unsigned int GeneratedCRC = CalculateBlockCRC32(112 - 4, bytePtr);
-//	this->CRC = GPS_struct.Checksum;
-//	Console::WriteLine("CalcCRC: {0}, ServerCRC: {1}, Equal {2}]", GeneratedCRC, CRC, GeneratedCRC == CRC);
-//	/*Setting attributes*/
-//	if (GeneratedCRC == this->CRC) {
-//		this->easting = GPS_struct.Easting;
-//		this->northing = GPS_struct.Northing;
-//		this->height = GPS_struct.Height;
-//	}
-//	else {
-//		Console::WriteLine("GPS checksum mismatched");
-//	}
-//	Thread::Sleep(100);
-
 	return SUCCESS;
 }
 
 
-
 error_state GNSS::communicate()
 {
+	unsigned int Header = 0;
+	Byte GData;
+	while (Header != 0x44121c) 
+	{
+		GData = Stream->ReadByte();
+		Header = (Header << 8) | GData;
+	}
+
+	for (int i = 0; i < 108; i++)
+	{
+		ReadData[i] = Stream->ReadByte();
+	}
+
+	Northing = BitConverter::ToDouble(ReadData, 40);
+
+	Easting = BitConverter::ToDouble(ReadData, 48);
+
+	Height = BitConverter::ToDouble(ReadData, 56);
+
+	CRC = BitConverter::ToUInt32(ReadData, 104);
+
+	Console::WriteLine("Northing:{0:F3} Easting:{1:F3} Height:{2:F3} CRC:{3:X8} ", Northing, Easting, Height, CRC);
 	return SUCCESS;
 }
 
@@ -165,7 +126,6 @@ error_state GNSS::checkData()
 {
 	return SUCCESS;
 }
-
 
 void GNSS::shutdownModules()
 {
@@ -177,3 +137,31 @@ bool GNSS::getShutdownFlag()
 {
 	return SM_TM_->shutdown & bit_GNSS;
 }
+
+//unsigned long CRC32Value(int i)
+//{
+//	int j;
+//	unsigned long ulCRC;
+//	ulCRC = i;
+//	for (j = 8; j > 0; j--)
+//	{
+//		if (ulCRC & 1)
+//			ulCRC = (ulCRC >> 1) ^ CRC32_POLYNOMIAL;
+//		else
+//			ulCRC >>= 1;
+//	}
+//	return ulCRC;
+//}
+//unsigned long CalculateBlockCRC32(unsigned long ulCount, /* Number of bytes in the data block */unsigned char* ucBuffer) /* Data block */
+//{
+//	unsigned long ulTemp1;
+//	unsigned long ulTemp2;
+//	unsigned long ulCRC = 0;
+//	while (ulCount-- != 0)
+//	{
+//		ulTemp1 = (ulCRC >> 8) & 0x00FFFFFFL;
+//		ulTemp2 = CRC32Value(((int)ulCRC ^ *ucBuffer++) & 0xff);
+//		ulCRC = ulTemp1 ^ ulTemp2;
+//	}
+//	return(ulCRC);
+//}

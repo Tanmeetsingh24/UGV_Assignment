@@ -25,6 +25,8 @@ public:
     error_state  processSharedMemory() override;
     error_state connect(String^ hostName, int portNumber) override;
 
+    //unsigned long CRC32Value(int i);
+    //unsigned long CalculateBlockCRC32(unsigned long ulCount, unsigned char* ucBuffer);
 
     ~GNSS() {};
 
@@ -33,5 +35,11 @@ private:
     SM_GNSS^ SM_GNSS_;
     Stopwatch^ Watch;
     array<unsigned char>^ SendData;
-
+    #define CRC32_POLYNOMIAL 0xEDB88320L
+    unsigned int CRC;
+    double Northing;
+    double Easting;
+    double Height;
 };
+
+

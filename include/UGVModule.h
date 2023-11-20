@@ -36,7 +36,8 @@ enum error_state {
 	ERR_NO_CLIENT_DATA,
 	ERR_NO_SERVER_DATA,
 	ERR_WRITE,
-	ERR_READ
+	ERR_READ,
+	ERR_GNSS_DATA
 };
 
 ref class UGVModule abstract
