@@ -45,7 +45,8 @@ private:
     SM_Laser^ SM_Laser_;
     SM_GNSS^ SM_GNSS_;
     SM_VehicleControl^ SM_VehicleControl_;
-    //SM_Controller^ SM_Controller_;
+    
+    SM_Controller^ SM_Controller_;
 
     array<Stopwatch^>^ StopwatchList;
     array<Thread^>^ ThreadList;

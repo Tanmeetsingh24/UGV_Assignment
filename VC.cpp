@@ -17,13 +17,13 @@ error_state VC::connect(String^ hostName, int portNumber)
 	Client = gcnew TcpClient(hostName, portNumber);
 	Stream = Client->GetStream();
 	Client->NoDelay = true;
-	Client->ReceiveTimeout = 500;
-	Client->SendTimeout = 500;
+	Client->ReceiveTimeout = 2500;
+	Client->SendTimeout = 2500;
 	Client->ReceiveBufferSize = 1024;
 	Client->SendBufferSize = 1024;
 
-	SendData = gcnew array<unsigned char>(64);
-	ReadData = gcnew array<unsigned char>(64);
+	SendData = gcnew array<unsigned char>(2048);
+	ReadData = gcnew array<unsigned char>(2048);
 	return SUCCESS;
 }
 
@@ -93,3 +93,55 @@ error_state VC::processSharedMemory()
 {
 	return SUCCESS;
 }
+///////////////////////////////////////////////////////////////////////////////
+//float processSpeed(float leftTrigger, float rightTrigger) {
+//	const float MAX_SPEED = 10.0f;
+//	return (leftTrigger - rightTrigger) * MAX_SPEED;
+//}
+//
+//
+//float processSteering(float joystickX) {
+//	const float MAX_STEERING_ANGLE = 45.0f;
+//	return joystickX * MAX_STEERING_ANGLE;
+//}
+//
+//void sendUGVCommand(float speed, float steeringAngle) {
+//	static int flag = 0; // Alternating flag
+//	std::string command = "#" + std::to_string(steeringAngle) + " " +
+//		std::to_string(speed) + " " + std::to_string(flag) + "#";
+//	// Send this command to the UGV
+//	ugvInterface.sendCommand(command);
+//	flag = 1 - flag; // Alternate flag
+//}
+//void VehicleControl::threadFunction()
+//{
+//	// Other initialization, like setting up communication with UGV
+//
+//	while (!getShutdownFlag()) {
+//		// Process controller data for UGV commands
+//		float speed = processSpeed(controllerData->leftTrigger, controllerData->rightTrigger);
+//		float steeringAngle = processSteering(controllerData->joystickX);
+//
+//		// Send commands to UGV
+//		// This should be adapted to your UGV's specific command interface
+//		sendUGVCommand(speed, steeringAngle);
+//
+//		int i = 0;
+//		Console::WriteLine("vc starting");
+//		Watch = gcnew Stopwatch;
+//		SM_TM_->ThreadBarrier->SignalAndWait();
+//		Watch->Start();
+//		while (!Console::KeyAvailable && !getShutdownFlag())
+//		{
+//			Console::WriteLine("vc running");
+//			processHeartbeats();
+//			if (communicate() == SUCCESS && checkData() == SUCCESS)
+//			{
+//				processSharedMemory();
+//			}
+//			Thread::Sleep(20);
+//			if (i++ > 100) break;
+//		}
+//		Console::WriteLine("vc terminated");
+//	}//vc ques bracket
+//}
