@@ -14,28 +14,46 @@ VC::VC(SM_ThreadManagement^ SM_TM, SM_VehicleControl^ SM_VC)
 
 error_state VC::connect(String^ hostName, int portNumber)
 {
-	Client = gcnew TcpClient(hostName, portNumber);
-	Stream = Client->GetStream();
+	try
+	{
+		Client = gcnew TcpClient(hostName, portNumber);
+	}
+	catch (int error)
+	{
+		Console::WriteLine("Error: Failed to establish connection with Vehicle Control Module err_code=%d", error);
+		shutdownModules();
+		return ERR_CONNECTION;
+	}
+
+
 	Client->NoDelay = true;
 	Client->ReceiveTimeout = 2500;
 	Client->SendTimeout = 2500;
 	Client->ReceiveBufferSize = 1024;
 	Client->SendBufferSize = 1024;
+	Stream = Client->GetStream();
 
 	SendData = gcnew array<unsigned char>(2048);
 	ReadData = gcnew array<unsigned char>(2048);
 	return SUCCESS;
 }
 
-void VC::threadFunction()
+error_state VC::communicate()
 {
+	return SUCCESS;
+}
+
+void VC::threadFunction()
+{	
+	connect(WEEDER_ADDRESS, 25000);
+
 	Console::WriteLine("VC		Thread is starting.");
 	//setup the stopwatch
 	Watch = gcnew Stopwatch;
 	//barrier
 	SM_TM_->ThreadBarrier->SignalAndWait();
 	Watch->Start();
-	while (/*!Console::KeyAvailable && */ !getShutdownFlag())
+	while (!getShutdownFlag())
 	{
 		Console::WriteLine("VC		Thread is running.");
 		processHeartbeats();
@@ -45,7 +63,7 @@ void VC::threadFunction()
 		}
 		Thread::Sleep(20);
 	}
-	Console::WriteLine("VC		thread is terminating");
+	Console::WriteLine("VC		Thread is terminating");
 
 }
 
@@ -77,11 +95,6 @@ void VC::shutdownModules()
 bool VC::getShutdownFlag()
 {
 	return SM_TM_->shutdown & bit_VC;
-}
-
-error_state VC::communicate()
-{
-	return SUCCESS;
 }
 
 error_state VC::checkData()

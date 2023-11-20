@@ -33,7 +33,7 @@ Controller::Controller(SM_ThreadManagement^ SM_TM, SM_Controller^ SM_Controller)
 
 void Controller::threadFunction()
 {
-	Console::WriteLine("Controller		Thread is starting.");
+	Console::WriteLine("Controller	Thread is starting.");
 	//setup the stopwatch
 	Watch = gcnew Stopwatch;
 	//barrier
@@ -41,7 +41,7 @@ void Controller::threadFunction()
 	Watch->Start();
 	while (/*!Console::KeyAvailable && */ !getShutdownFlag())
 	{
-		Console::WriteLine("Controller		Thread is running.");
+		Console::WriteLine("Controller	Thread is running.");
 		processHeartbeats();
 		/*if (communicate() == SUCCESS && checkData() == SUCCESS)
 		{
@@ -49,7 +49,7 @@ void Controller::threadFunction()
 		}*/
 		Thread::Sleep(20);
 	}
-	Console::WriteLine("Controller		thread is terminating");
+	Console::WriteLine("Controller	Thread is terminating");
 
 }
 

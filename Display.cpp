@@ -25,7 +25,7 @@ void Display::threadFunction()
 	//barrier
 	SM_TM_->ThreadBarrier->SignalAndWait();
 	Watch->Start();
-	while (/*!Console::KeyAvailable && */ !getShutdownFlag())
+	while ( !getShutdownFlag())
 	{
 		Console::WriteLine("Display		Thread is running.");
 		processHeartbeats();

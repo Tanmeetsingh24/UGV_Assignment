@@ -24,8 +24,7 @@ public:
     error_state processSharedMemory() override;
     error_state connect(String^ hostName, int portNumber) override;
     error_state Laser::authenticate();
-    //error_state Laser::readValues();
-    
+       
     ~Laser() {};
 
 private:

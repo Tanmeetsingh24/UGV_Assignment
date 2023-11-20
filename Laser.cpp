@@ -45,9 +45,9 @@ error_state Laser::communicate()
 	try 
 	{
 		SendData = Encoding::ASCII->GetBytes(Command);
-		Stream->WriteByte(0x02);
+		Stream->WriteByte(StartByte);
 		Stream->Write(SendData, 0, SendData->Length);
-		Stream->WriteByte(0x03);
+		Stream->WriteByte(EndByte);
 		Thread::Sleep(20);
 		Stream->Read(ReadData, 0, ReadData->Length);
 	}
@@ -109,7 +109,7 @@ error_state Laser::processSharedMemory()
 	}*/
 	//check if total number of fields have been received
 	
-	if (ResponseData->Length > 360) {
+	if (ResponseData->Length > 361) {
 		Fragments = ResponseData->Split(' ');
 			
 		//read data from LRF

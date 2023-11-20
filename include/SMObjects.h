@@ -99,8 +99,7 @@ ref class SM_Display
 {
 public:
     Object^ lockObject;
-
-
+    
     SM_Display() {
         lockObject = gcnew Object();
     }
@@ -110,7 +109,6 @@ ref class SM_Controller
 {
 public:
     Object^ lockObject;
-
 
     SM_Controller() {
         lockObject = gcnew Object();
