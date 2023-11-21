@@ -1,6 +1,7 @@
 #using<System.dll>
 #include "VC.h"
 
+
 using namespace System;
 using namespace System::Threading;
 using namespace System::Diagnostics;
@@ -40,8 +41,17 @@ error_state VC::connect(String^ hostName, int portNumber)
 }
 
 error_state VC::communicate()
-{
-	String^ ResponseData = Encoding::ASCII->GetString(ReadData);
+{	
+	Steering = SM_VehicleControl_->Steering;
+	Speed = SM_VehicleControl_->Speed;
+
+	String^ command1 = "# " + Convert::ToString(Steering) + " " + Convert::ToString(Speed) + " " + flag + " #";
+	//Console::WriteLine(command1);
+	flag = flag ?0: 1;
+	SendData = Encoding::ASCII->GetBytes(command1);
+
+	Stream->Write(SendData, 0, SendData->Length);
+		
 	return SUCCESS;
 }
 
@@ -52,7 +62,7 @@ error_state VC::authenticate()
 	Stream->Write(SendData, 0, SendData->Length);
 	Thread::Sleep(10);
 	
-	communicate();
+	
 
 	//if (ResponseData->Contains("OK"))
 	//{
@@ -82,17 +92,17 @@ void VC::threadFunction()
 	Watch->Start();
 	while (!getShutdownFlag())
 	{
-		Console::WriteLine("VC		Thread is running.");
+		Monitor::Enter(SM_VehicleControl_->lockObject);
+		//Console::WriteLine("VC		Thread is running.");
 		processHeartbeats();
-	
-		if (communicate() == SUCCESS && checkData() == SUCCESS)
-		{
-			processSharedMemory();
-		}
+		processSharedMemory();
+		communicate();
+		
 		Thread::Sleep(20);
+		Monitor::Exit(SM_VehicleControl_->lockObject);
 	}
 	Console::WriteLine("VC		Thread is terminating");
-
+	
 }
 
 error_state VC::processHeartbeats()
@@ -132,6 +142,7 @@ error_state VC::checkData()
 
 error_state VC::processSharedMemory()
 {
+
 	return SUCCESS;
 }
 
@@ -150,55 +161,3 @@ static float processSteering(double rightThumbX) {
 	const double MAX_STEERING_ANGLE = 40;
 	return rightThumbX * MAX_STEERING_ANGLE;
 }
-/////////////////////////////////////////////////////////////////////////////
-//float processSpeed(float leftTrigger, float rightTrigger) {
-//	const float MAX_SPEED = 10.0f;
-//	return (leftTrigger - rightTrigger) * MAX_SPEED;
-//}
-//
-//
-//float processSteering(float joystickX) {
-//	const float MAX_STEERING_ANGLE = 45.0f;
-//	return joystickX * MAX_STEERING_ANGLE;
-//}
-//
-//void sendUGVCommand(float speed, float steeringAngle) {
-//	static int flag = 0; // Alternating flag
-//	std::string command = "#" + std::to_string(steeringAngle) + " " +
-//		std::to_string(speed) + " " + std::to_string(flag) + "#";
-//	// Send this command to the UGV
-//	ugvInterface.sendCommand(command);
-//	flag = 1 - flag; // Alternate flag
-//}
-//void VehicleControl::threadFunction()
-//{
-//	// Other initialization, like setting up communication with UGV
-//
-//	while (!getShutdownFlag()) {
-//		// Process controller data for UGV commands
-//		float speed = processSpeed(controllerData->leftTrigger, controllerData->rightTrigger);
-//		float steeringAngle = processSteering(controllerData->joystickX);
-//
-//		// Send commands to UGV
-//		// This should be adapted to your UGV's specific command interface
-//		sendUGVCommand(speed, steeringAngle);
-//
-//		int i = 0;
-//		Console::WriteLine("vc starting");
-//		Watch = gcnew Stopwatch;
-//		SM_TM_->ThreadBarrier->SignalAndWait();
-//		Watch->Start();
-//		while (!Console::KeyAvailable && !getShutdownFlag())
-//		{
-//			Console::WriteLine("vc running");
-//			processHeartbeats();
-//			if (communicate() == SUCCESS && checkData() == SUCCESS)
-//			{
-//				processSharedMemory();
-//			}
-//			Thread::Sleep(20);
-//			if (i++ > 100) break;
-//		}
-//		Console::WriteLine("vc terminated");
-//	}//vc ques bracket
-//}

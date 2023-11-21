@@ -21,7 +21,7 @@ ref class Controller : public UGVModule
 {
 public:
 
-    Controller(SM_ThreadManagement^ SM_TM, SM_Controller^ SM_Controller);
+    Controller::Controller(SM_ThreadManagement^ SM_TM, SM_VehicleControl^ SM_VehicleControl);
 
     //Controller(SM_ThreadManagement^ SM_TM, SM_VehicleControl^ SM_VC); Implement this or the other constructor
 
@@ -37,7 +37,7 @@ public:
 
 private:
 
-    SM_Controller^ SM_Controller_;
+    SM_VehicleControl^ SM_VehicleControl_;
     Stopwatch^ Watch;
     array<unsigned char>^ SendData;
     

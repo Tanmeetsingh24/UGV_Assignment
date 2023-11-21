@@ -1,5 +1,5 @@
-#using<System.dll>
 #include "ControllerInterface.h"
+#using<System.dll>
 #include "Controller.h"
 #include "UGVModule.h"
 
@@ -29,9 +29,9 @@ ControllerInterface Xboxcontroller;
 //}
 
 
-Controller::Controller(SM_ThreadManagement^ SM_TM, SM_Controller^ SM_Controller)
+Controller::Controller(SM_ThreadManagement^ SM_TM, SM_VehicleControl^ SM_VehicleControl)
 {
-	SM_Controller_ = SM_Controller;
+	SM_VehicleControl_ = SM_VehicleControl;
 	SM_TM_ = SM_TM;
 	Watch = gcnew Stopwatch;
 	
@@ -39,8 +39,9 @@ Controller::Controller(SM_ThreadManagement^ SM_TM, SM_Controller^ SM_Controller)
 
 void Controller::threadFunction()
 {
+
 	
-	
+
 	Console::WriteLine("Controller	Thread is starting.");
 	//setup the stopwatch
 	Watch = gcnew Stopwatch;
@@ -49,25 +50,16 @@ void Controller::threadFunction()
 	Watch->Start();
 	while (!getShutdownFlag())
 	{
-		Console::WriteLine("Controller	Thread is running.");
+
+		//Console::WriteLine("Controller	Thread is running.");
 		processHeartbeats();
-		//if (isAButtonPressed())
-			//		{
-			//			shutdownThreads();
-			//			break;
-			//		}
-		if (Xboxcontroller.IsConnected() == true)
-		{
-			Console::WriteLine("Xbox Controller is Connected");
-			processSharedMemory();
-		}
 		
-		
-		
+				
 		Thread::Sleep(20);
 	}
 	Console::WriteLine("Controller	Thread is terminating");
 
+	
 }
 
 error_state Controller::processHeartbeats()
@@ -92,16 +84,29 @@ error_state Controller::processHeartbeats()
 
 error_state Controller::processSharedMemory()
 {
-	/*Xboxcontroller.GetState()bn 
-	_controllerState.printControllerState(buttonA)
-	_controllerState  leftThumbX
-	float leftTriggerValue = Xboxcontroller.GetState()leftTrigger;
-	float rightTriggerValue = state.rightTrigger;
-	float joystickXValue = state.joystickX;
-	controllerData->leftTrigger = leftTriggerValue;
-	controllerData->rightTrigger = rightTriggerValue;
-	controllerData->joystickX = joystickXValue;*/
-	
+	Monitor::Enter(SM_VehicleControl_->lockObject);
+
+	controllerState^ val = Xboxcontroller.GetState();
+
+	if (val->isConnected) {
+		SM_VehicleControl_->Steering = -val->rightThumbX * 40;
+
+		SM_VehicleControl_->Speed = val->rightTrigger - val->leftTrigger;
+
+	}
+	else {
+		SM_VehicleControl_->Steering = 0;
+		SM_VehicleControl_->Speed = 0;
+	}
+	Monitor::Exit(SM_VehicleControl_->lockObject);
+
+	Monitor::Enter(SM_TM_->lockObject);
+
+	if (val->buttonX) {
+		SM_TM_->shutdown = bit_ALL;
+	}
+	Monitor::Exit(SM_TM_->lockObject);
+
 	return SUCCESS;
 }
 
@@ -123,49 +128,4 @@ Controller::~Controller()
 
 }
 
-//////////////////////////////////////////////////////////////////
-//void Controller::threadFunction() {
-//	Joystick joystick;
-//	joystick.initialize();
-//
-//	while (!getShutdownFlag())
-//	{ //xbox button a shutdown
-//		if (isAButtonPressed())
-//		{
-//			shutdownThreads();
-//			break;
-//		}
-//
-//		JoystickState state = joystick.readState();
-//		float leftTriggerValue = state.leftTrigger;
-//		float rightTriggerValue = state.rightTrigger;
-//		float joystickXValue = state.joystickX;
-//		controllerData->leftTrigger = leftTriggerValue;
-//		controllerData->rightTrigger = rightTriggerValue;
-//		controllerData->joystickX = joystickXValue;
-//
-//		Console::WriteLine("controller running");
-//		processHeartbeats();
-//		if (communicate() == SUCCESS && checkData() == SUCCESS)
-//		{
-//			processSharedMemory();
-//		}
-//
-//		Thread::Sleep(20);
-//	}
-//
-//	Console::WriteLine("controller terminated");
-//}
-//
-//bool isAButtonPressed() {
-//	XINPUT_STATE state;
-//	ZeroMemory(&state, sizeof(XINPUT_STATE));
-//
-//	DWORD result = XInputGetState(0, &state);
-//
-//	if (result == ERROR_SUCCESS) {
-//		return (state.Gamepad.wButtons & XINPUT_GAMEPAD_A) != 0;
-//	}
-//
-//	return false;
-//
+

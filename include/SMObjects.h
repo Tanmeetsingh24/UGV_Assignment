@@ -30,13 +30,13 @@ constexpr uint8_t CRITICALMASK =    0x00;
 constexpr uint8_t bit_ALL =         0b00111111;
 constexpr uint8_t bit_TM =          0b00000001;
 constexpr uint8_t bit_LASER =       0b00000010;
-constexpr uint8_t bit_GNSS =         0b00000100;
+constexpr uint8_t bit_GNSS =        0b00000100;
 constexpr uint8_t bit_VC =          0b00001000;
 constexpr uint8_t bit_CONTROLLER =  0b00010000;
 constexpr uint8_t bit_DISPLAY =     0b00100000;
 
 #define STANDARD_LASER_LENGTH 361
-#define CRASH_LIMIT 2000
+#define CRASH_LIMIT 3000
 
 ref class SM_ThreadManagement
 {
@@ -105,14 +105,14 @@ public:
     }
 };
 
-ref class SM_Controller
-{
-public:
-    Object^ lockObject;
-
-    SM_Controller() {
-        lockObject = gcnew Object();
-    }
-};
+//ref class SM_VehicleControl
+//{
+//public:
+//    Object^ lockObject;
+//
+//    SM_VehicleControl() {
+//        lockObject = gcnew Object();
+//    }
+//};
 
 

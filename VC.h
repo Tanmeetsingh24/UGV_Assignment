@@ -69,6 +69,10 @@ private:
     Stopwatch^ Watch;
     array<unsigned char>^ SendData;
     String^ ResponseData;
+    int flag;
+
+    double Steering;
+    double Speed;
 
 };
 

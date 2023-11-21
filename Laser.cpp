@@ -149,7 +149,7 @@ void Laser::threadFunction()
 	Watch->Start();
 	while (!getShutdownFlag())
 	{
-		Console::WriteLine("Laser		Thread is running.");
+		//Console::WriteLine("Laser		Thread is running.");
 		processHeartbeats();
 		//readValues();
 		if (communicate() == SUCCESS && checkData() == SUCCESS)

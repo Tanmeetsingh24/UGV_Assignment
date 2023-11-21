@@ -27,7 +27,7 @@ void Display::threadFunction()
 	Watch->Start();
 	while ( !getShutdownFlag())
 	{
-		Console::WriteLine("Display		Thread is running.");
+		//Console::WriteLine("Display		Thread is running.");
 		processHeartbeats();
 		if (communicate() == SUCCESS && checkData() == SUCCESS)
 		{

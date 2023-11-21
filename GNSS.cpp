@@ -55,7 +55,7 @@ void GNSS::threadFunction()
 	Watch->Start();
 	while (!getShutdownFlag())
 	{
-		Console::WriteLine("GNSS		Thread is running.");
+		//Console::WriteLine("GNSS		Thread is running.");
 		processHeartbeats();
 		if (communicate() == SUCCESS && checkData() == SUCCESS)
 		{
