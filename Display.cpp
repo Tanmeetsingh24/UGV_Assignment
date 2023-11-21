@@ -128,6 +128,11 @@ error_state Display::checkData()
 {
 	return SUCCESS;
 }
+Display::~Display()
+{
+	Stream->Close();
+	Client->Close();
+}
 
 
 //void Display::FakeLaser() // SM_Laser_ should give us the access to real laer data. This is just to test the data being displayed on the Matlab module

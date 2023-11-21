@@ -25,7 +25,7 @@ public:
     error_state connect(String^ hostName, int portNumber) override;
     error_state Laser::authenticate();
        
-    ~Laser() {};
+    ~Laser();
 
 private:
     

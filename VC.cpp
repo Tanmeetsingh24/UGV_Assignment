@@ -10,6 +10,7 @@ VC::VC(SM_ThreadManagement^ SM_TM, SM_VehicleControl^ SM_VC)
 	SM_VehicleControl_ = SM_VC;
 	SM_TM_ = SM_TM;
 	Watch = gcnew Stopwatch;
+	//controllerInterface_ = gcnew ControllerInterface();
 }
 
 error_state VC::connect(String^ hostName, int portNumber)
@@ -40,12 +41,38 @@ error_state VC::connect(String^ hostName, int portNumber)
 
 error_state VC::communicate()
 {
+	String^ ResponseData = Encoding::ASCII->GetString(ReadData);
 	return SUCCESS;
+}
+
+error_state VC::authenticate()
+{
+	String^ Command = ("5510198\n");
+	SendData = Encoding::ASCII->GetBytes(Command);
+	Stream->Write(SendData, 0, SendData->Length);
+	Thread::Sleep(10);
+	
+	communicate();
+
+	//if (ResponseData->Contains("OK"))
+	//{
+	//	Console::WriteLine("VC: Authenticated");
+	//	return SUCCESS;
+	//}
+	//else
+	//{
+	//	Console::WriteLine("VC: Authentication failed");
+	//	return ERR_CONNECTION; //print error
+	//}
+	return SUCCESS;
+
 }
 
 void VC::threadFunction()
 {	
 	connect(WEEDER_ADDRESS, 25000);
+
+	authenticate();
 
 	Console::WriteLine("VC		Thread is starting.");
 	//setup the stopwatch
@@ -57,6 +84,7 @@ void VC::threadFunction()
 	{
 		Console::WriteLine("VC		Thread is running.");
 		processHeartbeats();
+	
 		if (communicate() == SUCCESS && checkData() == SUCCESS)
 		{
 			processSharedMemory();
@@ -106,7 +134,23 @@ error_state VC::processSharedMemory()
 {
 	return SUCCESS;
 }
-///////////////////////////////////////////////////////////////////////////////
+
+VC::~VC()
+{
+	Stream->Close();
+	Client->Close();
+}
+
+static float processSpeed(float leftTrigger, float rightTrigger) {
+	const double MAX_SPEED = 10;
+	return (rightTrigger - leftTrigger) * MAX_SPEED;
+}
+
+static float processSteering(double rightThumbX) {
+	const double MAX_STEERING_ANGLE = 40;
+	return rightThumbX * MAX_STEERING_ANGLE;
+}
+/////////////////////////////////////////////////////////////////////////////
 //float processSpeed(float leftTrigger, float rightTrigger) {
 //	const float MAX_SPEED = 10.0f;
 //	return (leftTrigger - rightTrigger) * MAX_SPEED;

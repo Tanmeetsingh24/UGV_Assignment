@@ -4,16 +4,12 @@
 #include "UGVModule.h"
 
 ///////////////////////////////////////////////////////
-#include "Controller.h"
 #include "SMObjects.h"
-#include "ControllerInterface.h"
 #include "Display.h"
 #include "Laser.h"
 #include "TMM.h"
 #include "VC.h" 
 #include "GNSS.h"
-#using <System.dll>
-#include <UGVModule.h>
 #include <iostream>
 #include <math.h>
 #include <windows.h>
@@ -24,29 +20,50 @@ using namespace System;
 using namespace System::Threading;
 using namespace System::Diagnostics;
 
+ControllerInterface Xboxcontroller;
+//
+//ControllerInterface::ControllerInterface(DWORD playerNum, int input_type)
+//{
+//	playerNum = 1; //keyboard
+//	//playerNum = 0; //Controller
+//}
+
+
 Controller::Controller(SM_ThreadManagement^ SM_TM, SM_Controller^ SM_Controller)
 {
 	SM_Controller_ = SM_Controller;
 	SM_TM_ = SM_TM;
 	Watch = gcnew Stopwatch;
+	
 }
 
 void Controller::threadFunction()
 {
+	
+	
 	Console::WriteLine("Controller	Thread is starting.");
 	//setup the stopwatch
 	Watch = gcnew Stopwatch;
 	//barrier
 	SM_TM_->ThreadBarrier->SignalAndWait();
 	Watch->Start();
-	while (/*!Console::KeyAvailable && */ !getShutdownFlag())
+	while (!getShutdownFlag())
 	{
 		Console::WriteLine("Controller	Thread is running.");
 		processHeartbeats();
-		/*if (communicate() == SUCCESS && checkData() == SUCCESS)
+		//if (isAButtonPressed())
+			//		{
+			//			shutdownThreads();
+			//			break;
+			//		}
+		if (Xboxcontroller.IsConnected() == true)
 		{
+			Console::WriteLine("Xbox Controller is Connected");
 			processSharedMemory();
-		}*/
+		}
+		
+		
+		
 		Thread::Sleep(20);
 	}
 	Console::WriteLine("Controller	Thread is terminating");
@@ -75,6 +92,16 @@ error_state Controller::processHeartbeats()
 
 error_state Controller::processSharedMemory()
 {
+	/*Xboxcontroller.GetState()bn 
+	_controllerState.printControllerState(buttonA)
+	_controllerState  leftThumbX
+	float leftTriggerValue = Xboxcontroller.GetState()leftTrigger;
+	float rightTriggerValue = state.rightTrigger;
+	float joystickXValue = state.joystickX;
+	controllerData->leftTrigger = leftTriggerValue;
+	controllerData->rightTrigger = rightTriggerValue;
+	controllerData->joystickX = joystickXValue;*/
+	
 	return SUCCESS;
 }
 

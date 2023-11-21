@@ -6,6 +6,9 @@ using namespace System;
 using namespace System::Threading;
 using namespace System::Diagnostics;
 
+unsigned long CRC32Value(int i);
+unsigned long CalculateBlockCRC32(unsigned long ulCount, unsigned char* ucBuffer);
+
 GNSS::GNSS(SM_ThreadManagement^ SM_TM, SM_GNSS^ SM_GNSS)
 {
 	SM_GNSS_ = SM_GNSS;
@@ -38,12 +41,6 @@ error_state GNSS::connect(String^ hostName, int portNumber)
 	communicate();
 
 	return SUCCESS;
-}
-
-GNSS::~GNSS()
-{
-	Stream->Close();
-	Client->Close();
 }
 
 void GNSS::threadFunction()
@@ -99,16 +96,19 @@ error_state GNSS::communicate()
 {
 	unsigned int Header = 0;
 	Byte GData;
-	 
+	
 	do{
 		GData = Stream->ReadByte();
 		Header = (Header << 8) | GData;
 	} while (Header != 0xaa44121c);
 
+	
+
 	for (int i = 0; i < 108; i++)
 	{
 		ReadData[i] = Stream->ReadByte();
 	}
+	Monitor::Enter(SM_GNSS_->lockObject);
 
 	Northing = BitConverter::ToDouble(ReadData, 40);
 
@@ -118,7 +118,11 @@ error_state GNSS::communicate()
 
 	CRC = BitConverter::ToUInt32(ReadData, 104);
 
-	//CalculatedCRC = 
+	pin_ptr<unsigned char> CRCReadData = &ReadData[0];
+
+	CalculatedCRC = CalculateBlockCRC32(108, CRCReadData);
+
+	Monitor::Exit(SM_GNSS_->lockObject);
 
 	Console::WriteLine("Northing:{0:F3} Easting:{1:F3} Height:{2:F3} CRC:{3:X8} ", Northing, Easting, Height, CRC);
 	return SUCCESS;
@@ -140,30 +144,36 @@ bool GNSS::getShutdownFlag()
 	return SM_TM_->shutdown & bit_GNSS;
 }
 
-//unsigned long CRC32Value(int i)
-//{
-//	int j;
-//	unsigned long ulCRC;
-//	ulCRC = i;
-//	for (j = 8; j > 0; j--)
-//	{
-//		if (ulCRC & 1)
-//			ulCRC = (ulCRC >> 1) ^ CRC32_POLYNOMIAL;
-//		else
-//			ulCRC >>= 1;
-//	}
-//	return ulCRC;
-//}
-//unsigned long CalculateBlockCRC32(unsigned long ulCount, /* Number of bytes in the data block */unsigned char* ucBuffer) /* Data block */
-//{
-//	unsigned long ulTemp1;
-//	unsigned long ulTemp2;
-//	unsigned long ulCRC = 0;
-//	while (ulCount-- != 0)
-//	{
-//		ulTemp1 = (ulCRC >> 8) & 0x00FFFFFFL;
-//		ulTemp2 = CRC32Value(((int)ulCRC ^ *ucBuffer++) & 0xff);
-//		ulCRC = ulTemp1 ^ ulTemp2;
-//	}
-//	return(ulCRC);
-//}
+GNSS::~GNSS()
+{
+	Stream->Close();
+	Client->Close();
+}
+
+static unsigned long CRC32Value(int i)
+{
+	int j;
+	unsigned long ulCRC;
+	ulCRC = i;
+	for (j = 8; j > 0; j--)
+	{
+		if (ulCRC & 1)
+			ulCRC = (ulCRC >> 1) ^ CRC32_POLYNOMIAL;
+		else
+			ulCRC >>= 1;
+	}
+	return ulCRC;
+}
+static unsigned long CalculateBlockCRC32(unsigned long ulCount, /* Number of bytes in the data block */unsigned char* ucBuffer) /* Data block */
+{
+	unsigned long ulTemp1;
+	unsigned long ulTemp2;
+	unsigned long ulCRC = 0;
+	while (ulCount-- != 0)
+	{
+		ulTemp1 = (ulCRC >> 8) & 0x00FFFFFFL;
+		ulTemp2 = CRC32Value(((int)ulCRC ^ *ucBuffer++) & 0xff);
+		ulCRC = ulTemp1 ^ ulTemp2;
+	}
+	return(ulCRC);
+}

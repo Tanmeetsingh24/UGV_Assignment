@@ -59,13 +59,16 @@ public:
     error_state processSharedMemory() override;
     error_state connect(String^ hostName, int portNumber) override;
     
+    error_state VC::authenticate();
 
-    ~VC() {};
+    ~VC();
 
 private:
     SM_ThreadManagement^ SM_TM_;
     SM_VehicleControl^ SM_VehicleControl_;
     Stopwatch^ Watch;
     array<unsigned char>^ SendData;
+    String^ ResponseData;
+
 };
 

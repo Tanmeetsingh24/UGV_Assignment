@@ -25,8 +25,7 @@ public:
     error_state  processSharedMemory() override;
     error_state connect(String^ hostName, int portNumber) override;
 
-    //unsigned long CRC32Value(int i);
-    //unsigned long CalculateBlockCRC32(unsigned long ulCount, unsigned char* ucBuffer);
+   
 
     ~GNSS();
 
@@ -40,6 +39,10 @@ private:
     double Northing;
     double Easting;
     double Height;
+
+    unsigned int CalculatedCRC;
+
+
 };
 
 

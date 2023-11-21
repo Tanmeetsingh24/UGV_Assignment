@@ -11,6 +11,7 @@ using namespace System::Text;
 
 
 struct ControllerData {
+
     float leftTrigger;  // For propulsion speed
     float rightTrigger; // For propulsion speed
     float joystickX;    // For steering
@@ -39,6 +40,7 @@ private:
     SM_Controller^ SM_Controller_;
     Stopwatch^ Watch;
     array<unsigned char>^ SendData;
+    
 
 };
 

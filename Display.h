@@ -25,7 +25,7 @@ public:
 
     void Display::sendDisplayData();
 
-    ~Display() {};
+    ~Display();
 
 private:
     //List of inherited Data Members

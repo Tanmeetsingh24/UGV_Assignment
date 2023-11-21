@@ -197,4 +197,8 @@ error_state Laser::checkData()
 	return SUCCESS;
 }
 
-
+Laser::~Laser()
+{
+	Stream->Close();
+	Client->Close();
+}
